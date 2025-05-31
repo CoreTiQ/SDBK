@@ -3,16 +3,17 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { db, utils } from '@/lib/supabase';
+import { ExpenseModal } from './ExpenseModal';
+import { ExpenseCard } from './ExpenseCard';
+import { ExpenseFilters } from './ExpenseFilters';
+import { ExpenseStats } from './ExpenseStats';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { 
-  PlusIcon,
-  TrashIcon,
-  PencilSquareIcon,
-  BanknotesIcon,
-  CalendarIcon
+  PlusIcon, 
+  FunnelIcon,
+  DocumentArrowDownIcon 
 } from '@heroicons/react/24/outline';
-import { Dialog } from '@headlessui/react';
 import { toast } from 'react-hot-toast';
 import type { Expense } from '@/lib/supabase';
 

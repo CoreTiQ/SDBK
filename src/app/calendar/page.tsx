@@ -4,6 +4,12 @@ import { useState } from 'react';
 import { Calendar } from '@/components/Calendar';
 import { CalendarFilters } from '@/components/Calendar/CalendarFilters';
 import { CalendarStats } from '@/components/Calendar/CalendarStats';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'التقويم',
+  description: 'عرض وإدارة حجوزات الفيلا في التقويم الشهري',
+};
 
 export default function CalendarPage() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
@@ -27,13 +33,13 @@ export default function CalendarPage() {
       </header>
 
       {/* Calendar Filters */}
-      {/* <CalendarFilters 
+      <CalendarFilters 
         filters={filters}
         onFiltersChange={setFilters}
-      /> */}
+      />
 
       {/* Calendar Stats */}
-      {/* <CalendarStats selectedMonth={selectedMonth} /> */}
+      <CalendarStats selectedMonth={selectedMonth} />
 
       {/* Main Calendar */}
       <div className="glass-container">

@@ -20,8 +20,6 @@ export function PWAInstallPrompt() {
   useEffect(() => {
     // التحقق من حالة التثبيت
     const checkInstallation = () => {
-      if (typeof window === 'undefined') return;
-      
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isInWebApp = 'standalone' in window.navigator && (window.navigator as any).standalone;
       const isInstallPromptDismissed = localStorage.getItem('pwa-install-dismissed');
@@ -43,7 +41,7 @@ export function PWAInstallPrompt() {
       
       // إظهار الإشعار بعد 3 ثوانٍ إذا لم يكن مثبتاً
       setTimeout(() => {
-        if (!isInstalled && typeof window !== 'undefined' && !localStorage.getItem('pwa-install-dismissed')) {
+        if (!isInstalled && !localStorage.getItem('pwa-install-dismissed')) {
           setIsVisible(true);
         }
       }, 3000);
@@ -54,24 +52,16 @@ export function PWAInstallPrompt() {
       setIsInstalled(true);
       setIsVisible(false);
       setDeferredPrompt(null);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('pwa-install-dismissed');
-      }
+      localStorage.removeItem('pwa-install-dismissed');
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-      window.addEventListener('appinstalled', handleAppInstalled);
-    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-        window.removeEventListener('appinstalled', handleAppInstalled);
-      }
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, [isInstalled]);
-
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
 
@@ -83,9 +73,7 @@ export function PWAInstallPrompt() {
         console.log('User accepted the install prompt');
       } else {
         console.log('User dismissed the install prompt');
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('pwa-install-dismissed', 'true');
-        }
+        localStorage.setItem('pwa-install-dismissed', 'true');
       }
       
       setDeferredPrompt(null);
@@ -97,9 +85,7 @@ export function PWAInstallPrompt() {
 
   const handleDismiss = () => {
     setIsVisible(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('pwa-install-dismissed', 'true');
-    }
+    localStorage.setItem('pwa-install-dismissed', 'true');
   };
 
   // عدم إظهار الإشعار إذا كان التطبيق مثبتاً أو غير مرئي

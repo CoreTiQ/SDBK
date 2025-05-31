@@ -8,37 +8,65 @@ import {
   BanknotesIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
+import {
+  HomeIcon as HomeIconSolid,
+  CalendarDaysIcon as CalendarDaysIconSolid,
+  BanknotesIcon as BanknotesIconSolid,
+  ChartBarIcon as ChartBarIconSolid
+} from '@heroicons/react/24/solid';
 
-export default function Navigation() {
+const navItems = [
+  {
+    href: '/',
+    label: 'الرئيسية',
+    icon: HomeIcon,
+    activeIcon: HomeIconSolid,
+  },
+  {
+    href: '/calendar',
+    label: 'التقويم',
+    icon: CalendarDaysIcon,
+    activeIcon: CalendarDaysIconSolid,
+  },
+  {
+    href: '/expenses',
+    label: 'المصروفات',
+    icon: BanknotesIcon,
+    activeIcon: BanknotesIconSolid,
+  },
+  {
+    href: '/stats',
+    label: 'الإحصائيات',
+    icon: ChartBarIcon,
+    activeIcon: ChartBarIconSolid,
+  },
+];
+
+export function Navigation() {
   const pathname = usePathname();
 
-  const getActiveClass = (path: string) => {
-    const isActive = pathname === path;
-    return `flex flex-col items-center gap-1 p-2 rounded-lg transition
-      ${isActive ? 'text-white/90 bg-white/10' : 'text-white/60 hover:text-white/90 hover:bg-white/5'}`;
-  };
-
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-lg border-t border-white/10 py-2 px-4 flex items-center justify-around z-50 safe-bottom">
-      <Link href="/" className={getActiveClass('/')}>
-        <HomeIcon className="w-6 h-6" />
-        <span className="text-xs">الرئيسية</span>
-      </Link>
+    <nav className="mobile-nav safe-area-bottom">
+      {navItems.map((item) => {
+        const isActive = pathname === item.href;
+        const Icon = isActive ? item.activeIcon : item.icon;
 
-      <Link href="/calendar" className={getActiveClass('/calendar')}>
-        <CalendarDaysIcon className="w-6 h-6" />
-        <span className="text-xs">التقويم</span>
-      </Link>
-
-      <Link href="/expenses" className={getActiveClass('/expenses')}>
-        <BanknotesIcon className="w-6 h-6" />
-        <span className="text-xs">المصروفات</span>
-      </Link>
-      
-      <Link href="/stats" className={getActiveClass('/stats')}>
-        <ChartBarIcon className="w-6 h-6" />
-        <span className="text-xs">الإحصائيات</span>
-      </Link>
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`nav-item ${isActive ? 'active' : ''}`}
+          >
+            <Icon className="w-6 h-6" />
+            <span className="text-xs font-medium truncate">
+              {item.label}
+            </span>
+            {isActive && (
+              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary-400 rounded-full" />
+            )}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

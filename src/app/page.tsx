@@ -1,33 +1,49 @@
 'use client';
 
 import { useEffect } from 'react';
-import Calendar from '@/components/Calendar';
-import StatsGrid from '@/components/Stats/StatsGrid';
+import { Calendar } from '@/components/Calendar';
+import { StatsOverview } from '@/components/Stats';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 
-export default function Home() {
-  // تسجيل Service Worker لدعم PWA
+export default function HomePage() {
+  // تسجيل Service Worker
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       navigator.serviceWorker
         .register('/service-worker.js')
         .then((registration) => {
-          console.log('Service Worker registered:', registration);
+          console.log('Service Worker registered successfully:', registration.scope);
         })
         .catch((error) => {
-          console.log('Service Worker registration failed:', error);
+          console.error('Service Worker registration failed:', error);
         });
     }
   }, []);
 
   return (
-    <main className="container mx-auto p-4 max-w-7xl">
-      {/* <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">نظام حجز الفيلا</h1>
-        <p className="text-gray-600">نظام إدارة الحجوزات والمدفوعات</p>
-      </header> */}
-      
-      <Calendar />
-      <StatsGrid />
-    </main>
+    <div className="space-y-8">
+      {/* Header */}
+      <header className="text-center space-y-4">
+        <h1 className="heading-xl text-gradient">
+          نظام حجز الفيلا
+        </h1>
+        <p className="text-muted text-lg">
+          إدارة الحجوزات والمدفوعات بسهولة
+        </p>
+      </header>
+
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
+
+      {/* Main Calendar */}
+      <section>
+        <Calendar />
+      </section>
+
+      {/* Statistics Overview */}
+      <section>
+        <StatsOverview />
+      </section>
+    </div>
   );
 }

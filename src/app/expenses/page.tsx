@@ -1,108 +1,103 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ExpensesSystem } from '@/components/ExpensesSystem';
+import { ExpensesManager } from '@/components/Expenses';
+import { PinAuthModal } from '@/components/ui/PinAuthModal';
+import type { Metadata } from 'next';
 
-function PinInput({ onSubmit }: { onSubmit: (pin: string) => void }) {
-  const [pin, setPin] = useState(['', '', '', '']);
-  const [error, setError] = useState(false);
-
-  const handlePinChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    if (!/^\d*$/.test(value)) return;
-
-    const newPin = [...pin];
-    newPin[index] = value;
-    setPin(newPin);
-    setError(false);
-
-    // التنقل التلقائي للمربع التالي
-    if (value !== '' && index < 3) {
-      const nextInput = document.getElementById(`pin-${index + 1}`);
-      nextInput?.focus();
-    }
-
-    // التحقق من اكتمال الرمز
-    if (index === 3 && value !== '') {
-      const fullPin = [...newPin.slice(0, 3), value].join('');
-      if (fullPin === '5544') { // يمكنك تغيير كلمة المرور هنا
-        onSubmit(fullPin);
-      } else {
-        setError(true);
-        setPin(['', '', '', '']);
-        document.getElementById('pin-0')?.focus();
-      }
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && pin[index] === '' && index > 0) {
-      const prevInput = document.getElementById(`pin-${index - 1}`);
-      prevInput?.focus();
-    }
-  };
-
-  useEffect(() => {
-    document.getElementById('pin-0')?.focus();
-  }, []);
-
-  return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center">
-      <div className="bg-white/5 p-8 rounded-2xl backdrop-blur-lg border border-white/10 w-full max-w-md">
-        <h2 className="text-xl font-bold text-white text-center mb-6">
-          أدخل كلمة المرور للوصول إلى الإحصائيات
-        </h2>
-        
-        <div className="flex justify-center gap-3 mb-4">
-          {pin.map((digit, index) => (
-            <input
-              key={index}
-              id={`pin-${index}`}
-              type="password"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handlePinChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              className={`
-                w-14 h-14 text-center text-2xl font-bold
-                bg-white/10 border border-white/20
-                rounded-lg text-white
-                focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                transition-all duration-200
-                ${error ? 'border-red-500 ring-1 ring-red-500' : ''}
-              `}
-            />
-          ))}
-        </div>
-        
-        {error && (
-          <p className="text-red-400 text-sm text-center">
-            كلمة المرور غير صحيحة. حاول مرة أخرى.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
+export const metadata: Metadata = {
+  title: 'المصروفات',
+  description: 'إدارة وتتبع مصروفات الفيلا',
+};
 
 export default function ExpensesPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(true);
 
-  const handlePinSubmit = (pin: string) => {
+  // التحقق من المصادقة المحفوظة
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('expenses-auth');
+    if (savedAuth) {
+      const { timestamp, authenticated } = JSON.parse(savedAuth);
+      const now = Date.now();
+      const oneHour = 60 * 60 * 1000; // ساعة واحدة
+      
+      if (authenticated && (now - timestamp) < oneHour) {
+        setIsAuthenticated(true);
+        setShowPinModal(false);
+      } else {
+        localStorage.removeItem('expenses-auth');
+      }
+    }
+  }, []);
+
+  const handleAuthSuccess = () => {
     setIsAuthenticated(true);
+    setShowPinModal(false);
+    
+    // حفظ المصادقة لمدة ساعة
+    localStorage.setItem('expenses-auth', JSON.stringify({
+      authenticated: true,
+      timestamp: Date.now(),
+    }));
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setShowPinModal(true);
+    localStorage.removeItem('expenses-auth');
   };
 
   if (!isAuthenticated) {
-    return <PinInput onSubmit={handlePinSubmit} />;
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <PinAuthModal
+          isOpen={showPinModal}
+          onClose={() => setShowPinModal(false)}
+          onSuccess={handleAuthSuccess}
+          title="الوصول إلى المصروفات"
+          description="أدخل كلمة المرور للوصول إلى إدارة المصروفات"
+        />
+        
+        {!showPinModal && (
+          <div className="glass-container text-center space-y-4">
+            <h2 className="heading-md">مطلوب مصادقة</h2>
+            <p className="text-muted">
+              يجب إدخال كلمة المرور للوصول إلى هذه الصفحة
+            </p>
+            <button
+              onClick={() => setShowPinModal(true)}
+              className="btn btn-primary"
+            >
+              إدخال كلمة المرور
+            </button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
-    <main className="container mx-auto p-4 max-w-7xl">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-white">إدارة المصروفات</h1>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="heading-lg">إدارة المصروفات</h1>
+          <p className="text-muted">
+            تتبع وإدارة جميع مصروفات الفيلا
+          </p>
+        </div>
+        
+        <button
+          onClick={handleLogout}
+          className="btn btn-ghost text-sm"
+        >
+          تسجيل الخروج
+        </button>
       </header>
-      <ExpensesSystem />
-    </main>
+
+      {/* Expenses Manager */}
+      <ExpensesManager />
+    </div>
   );
 }

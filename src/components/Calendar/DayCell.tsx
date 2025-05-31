@@ -1,100 +1,154 @@
 'use client';
 
-import { Booking } from '@/lib/supabase';
-import moment from 'moment';
 import { useMemo } from 'react';
-import { Badge } from '../ui/Badge';
+import { format, isToday, isPast } from 'date-fns';
+import { ar } from 'date-fns/locale';
+import type { Booking } from '@/lib/supabase';
 
 interface DayCellProps {
-  date: string;
+  date: Date;
   bookings: Booking[];
   onClick: () => void;
+  isCurrentMonth: boolean;
+  disabled?: boolean;
 }
 
-export default function DayCell({ date, bookings, onClick }: DayCellProps) {
-  const { hasFullDay, hasMorning, hasEvening } = useMemo(() => ({
-    hasFullDay: bookings.some(b => b.booking_type === 'full'),
-    hasMorning: bookings.some(b => b.booking_type === 'morning'),
-    hasEvening: bookings.some(b => b.booking_type === 'evening'),
-  }), [bookings]);
+export function DayCell({ 
+  date, 
+  bookings, 
+  onClick, 
+  isCurrentMonth, 
+  disabled 
+}: DayCellProps) {
+  const dayNumber = date.getDate();
+  const isCurrentDay = isToday(date);
+  const isPastDay = isPast(date) && !isCurrentDay;
 
-  const dayNumber = moment(date).date();
-  const totalIncome = bookings.reduce((sum, b) => sum + b.price, 0);
-  const isToday = moment(date).isSame(moment(), 'day');
+  const bookingStats = useMemo(() => {
+    const hasFullDay = bookings.some(b => b.booking_type === 'full');
+    const hasMorning = bookings.some(b => b.booking_type === 'morning');
+    const hasEvening = bookings.some(b => b.booking_type === 'evening');
+    const hasFreeBookings = bookings.some(b => b.is_free);
+    const totalRevenue = bookings.reduce((sum, b) => sum + b.price, 0);
+    
+    return {
+      hasFullDay,
+      hasMorning,
+      hasEvening,
+      hasFreeBookings,
+      totalRevenue,
+      bookingCount: bookings.length,
+    };
+  }, [bookings]);
+
+  const getCellClassName = () => {
+    let className = 'calendar-day';
+    
+    if (isCurrentDay) className += ' today';
+    if (isPastDay) className += ' past';
+    if (!isCurrentMonth) className += ' opacity-30';
+    if (disabled) className += ' cursor-not-allowed';
+    
+    if (bookingStats.hasFullDay) {
+      className += ' booked-full';
+    } else if (bookingStats.hasMorning && bookingStats.hasEvening) {
+      className += ' booked-partial';
+    }
+    
+    return className;
+  };
+
+  const getBookingIndicators = () => {
+    if (bookings.length === 0) {
+      return (
+        <div className="absolute bottom-2 left-2 right-2">
+          <div className="text-xs text-white/40 text-center hidden md:block">
+            متاح
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="absolute bottom-1 left-1 right-1 space-y-1">
+        {/* Desktop View */}
+        <div className="hidden md:block space-y-1">
+          {/* Booking Type Indicators */}
+          <div className="flex flex-wrap gap-1 justify-center">
+            {bookingStats.hasFullDay && (
+              <span className="badge badge-red text-xs">يوم كامل</span>
+            )}
+            {!bookingStats.hasFullDay && bookingStats.hasMorning && (
+              <span className="badge badge-blue text-xs">صباحي</span>
+            )}
+            {!bookingStats.hasFullDay && bookingStats.hasEvening && (
+              <span className="badge badge-orange text-xs">مسائي</span>
+            )}
+            {bookingStats.hasFreeBookings && (
+              <span className="badge badge-green text-xs">مجاني</span>
+            )}
+          </div>
+          
+          {/* Revenue */}
+          {bookingStats.totalRevenue > 0 && (
+            <div className="text-xs text-white/80 text-center font-medium">
+              {bookingStats.totalRevenue.toFixed(3)} د.ك
+            </div>
+          )}
+        </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden flex items-center justify-center">
+          <div className="flex items-center gap-1">
+            {/* Booking Type Dots */}
+            {bookingStats.hasFullDay && (
+              <div className="w-2 h-2 rounded-full bg-red-500"></div>
+            )}
+            {!bookingStats.hasFullDay && bookingStats.hasMorning && (
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+            )}
+            {!bookingStats.hasFullDay && bookingStats.hasEvening && (
+              <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+            )}
+            {bookingStats.hasFreeBookings && (
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            )}
+            
+            {/* Booking Count */}
+            {bookings.length > 1 && (
+              <span className="text-xs text-white/80 font-medium">
+                {bookings.length}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <button
-      onClick={onClick}
-      className={`
-        calendar-day relative
-        ${hasFullDay ? 'booking-full' : ''}
-        ${hasMorning && !hasFullDay ? 'booking-morning' : ''}
-        ${hasEvening && !hasFullDay ? 'booking-evening' : ''}
-        ${isToday ? 'ring-2 ring-blue-500/50' : ''}
-      `}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={getCellClassName()}
+      title={isCurrentMonth ? format(date, 'EEEE، dd MMMM yyyy', { locale: ar }) : undefined}
     >
-      {/* رقم اليوم */}
+      {/* Day Number */}
       <div className="day-number">
         {dayNumber}
       </div>
 
-      {/* عرض للشاشات الكبيرة */}
-      <div className="hidden md:block">
-        {bookings.length > 0 ? (
-          <div className="mt-6 space-y-2">
-            {/* نوع الحجز */}
-            {hasFullDay ? (
-              <Badge variant="red">يوم كامل</Badge>
-            ) : (
-              <div className="flex flex-wrap gap-1">
-                {hasMorning && <Badge variant="blue">صباحي</Badge>}
-                {hasEvening && <Badge variant="orange">مسائي</Badge>}
-              </div>
-            )}
-            {/* السعر */}
-            {totalIncome > 0 && (
-              
-              <div className="text-sm text-white/70 mt-1">
-                {totalIncome.toFixed(3)} د
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="h-full flex items-center justify-center text-white/40">
-            متاح
-          </div>
-        )}
-      </div>
+      {/* Booking Status */}
+      {isCurrentMonth && getBookingIndicators()}
 
-      {/* عرض للموبايل */}
-      <div className="block md:hidden">
-        {bookings.length > 0 ? (
-          <div className="mobile-badge">
- {/* نوع الحجز */}
- <span className="booking-type">
-   {hasFullDay ? 'يوم كامل' : 
-    hasMorning && hasEvening ? 'ص/م' :
-    hasMorning ? 'صباحي' : 
-    hasEvening ? 'مسائي' : ''}
- </span>
+      {/* Multiple Bookings Indicator */}
+      {isCurrentMonth && bookings.length > 1 && (
+        <div className="absolute top-1 left-1 w-2 h-2 bg-white/60 rounded-full"></div>
+      )}
 
- {/* السعر - يظهر فقط في الشاشات المتوسطة والكبيرة */}
- {totalIncome > 0 && (
-   <span className="hidden sm:inline-block text-[10px] mr-2">
-     {totalIncome.toFixed(3)} د.ك
-   </span>
- )}
-</div>
-        ) : (
-          <div className="mobile-badge opacity-50">
-            متاح
-          </div>
-        )}
-      </div>
-
-      {/* مؤشر للحجوزات المتعددة */}
-      {bookings.length > 1 && (
-        <div className="absolute top-1 left-1 w-2 h-2 bg-white/50 rounded-full" />
+      {/* Today Indicator */}
+      {isCurrentDay && (
+        <div className="absolute inset-0 rounded-xl ring-2 ring-primary-500 pointer-events-none"></div>
       )}
     </button>
   );

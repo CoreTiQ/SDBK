@@ -1,0 +1,157 @@
+{
+  "name": "نظام حجز الفيلا",
+  "short_name": "حجز الفيلا",
+  "description": "نظام إدارة حجوزات وإيجارات الفيلا اليومية - تطبيق ويب تقدمي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "شاشة التقويم الرئيسية"
+    },
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "التقويم على الهاتف"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "إضافة حجز جديد",
+      "short_name": "حجز جديد",
+      "description": "إضافة حجز جديد بسرعة",
+      "url": "/?action=new-booking",
+      "icons": [
+        {
+          "src": "/icons/shortcut-new-booking.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "عرض الإحصائيات",
+      "short_name": "الإحصائيات",
+      "description": "عرض إحصائيات الحجوزات والدخل",
+      "url": "/stats",
+      "icons": [
+        {
+          "src": "/icons/shortcut-stats.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "إدارة المصروفات",
+      "short_name": "المصروفات",
+      "description": "إضافة وإدارة المصروفات",
+      "url": "/expenses",
+      "icons": [
+        {
+          "src": "/icons/shortcut-expenses.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "file_handlers": [
+    {
+      "action": "/import",
+      "accept": {
+        "application/json": [".json"],
+        "text/csv": [".csv"]
+      }
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+villa-booking",
+      "url": "/?action=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "file",
+          "accept": ["image/*", ".pdf", ".json", ".csv"]
+        }
+      ]
+    }
+  }
+}

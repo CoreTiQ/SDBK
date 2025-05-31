@@ -3,12 +3,6 @@
 import { useState, useEffect } from 'react';
 import { ExpensesManager } from '@/components/Expenses';
 import { PinAuthModal } from '@/components/ui/PinAuthModal';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'المصروفات',
-  description: 'إدارة وتتبع مصروفات الفيلا',
-};
 
 export default function ExpensesPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,17 +10,19 @@ export default function ExpensesPage() {
 
   // التحقق من المصادقة المحفوظة
   useEffect(() => {
-    const savedAuth = localStorage.getItem('expenses-auth');
-    if (savedAuth) {
-      const { timestamp, authenticated } = JSON.parse(savedAuth);
-      const now = Date.now();
-      const oneHour = 60 * 60 * 1000; // ساعة واحدة
-      
-      if (authenticated && (now - timestamp) < oneHour) {
-        setIsAuthenticated(true);
-        setShowPinModal(false);
-      } else {
-        localStorage.removeItem('expenses-auth');
+    if (typeof window !== 'undefined') {
+      const savedAuth = localStorage.getItem('expenses-auth');
+      if (savedAuth) {
+        const { timestamp, authenticated } = JSON.parse(savedAuth);
+        const now = Date.now();
+        const oneHour = 60 * 60 * 1000; // ساعة واحدة
+        
+        if (authenticated && (now - timestamp) < oneHour) {
+          setIsAuthenticated(true);
+          setShowPinModal(false);
+        } else {
+          localStorage.removeItem('expenses-auth');
+        }
       }
     }
   }, []);
@@ -36,16 +32,20 @@ export default function ExpensesPage() {
     setShowPinModal(false);
     
     // حفظ المصادقة لمدة ساعة
-    localStorage.setItem('expenses-auth', JSON.stringify({
-      authenticated: true,
-      timestamp: Date.now(),
-    }));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('expenses-auth', JSON.stringify({
+        authenticated: true,
+        timestamp: Date.now(),
+      }));
+    }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setShowPinModal(true);
-    localStorage.removeItem('expenses-auth');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('expenses-auth');
+    }
   };
 
   if (!isAuthenticated) {

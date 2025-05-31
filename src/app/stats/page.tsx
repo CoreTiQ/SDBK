@@ -4,18 +4,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { db } from '@/lib/supabase';
 import { StatsOverview } from '@/components/Stats';
-import { RevenueChart } from '@/components/Stats/RevenueChart';
-import { BookingsTable } from '@/components/Stats/BookingsTable';
-import { DateRangePicker } from '@/components/ui/DateRangePicker';
-import { ExportButton } from '@/components/ui/ExportButton';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'الإحصائيات',
-  description: 'عرض إحصائيات الحجوزات والدخل والأداء',
-};
 
 export default function StatsPage() {
   const [dateRange, setDateRange] = useState({
@@ -97,15 +87,12 @@ export default function StatsPage() {
         </div>
         
         <div className="flex items-center gap-4">
-          <DateRangePicker
-            value={dateRange}
-            onChange={setDateRange}
-          />
-          <ExportButton
-            onExport={handleExport}
-            data={stats}
-            filename={`villa-stats-${format(new Date(), 'yyyy-MM-dd')}`}
-          />
+          <button
+            onClick={handleExport}
+            className="btn btn-secondary"
+          >
+            تصدير البيانات
+          </button>
         </div>
       </header>
 
@@ -116,20 +103,59 @@ export default function StatsPage() {
         dateRange={dateRange}
       />
 
-      {/* Revenue Chart */}
-      <div className="glass-container">
-        <RevenueChart 
-          bookings={bookings}
-          expenses={expenses}
-          dateRange={dateRange}
-        />
-      </div>
-
       {/* Detailed Tables */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Bookings Table */}
         <div className="glass-container">
-          <BookingsTable bookings={bookings} />
+          <div className="space-y-4">
+            <h3 className="heading-md">سجل الحجوزات</h3>
+            
+            {bookings.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="text-right py-3 px-4 text-sm font-medium text-white/80">
+                        العميل
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-white/80">
+                        المبلغ
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-white/80">
+                        التاريخ
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-white/80">
+                        النوع
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bookings.map((booking) => (
+                      <tr key={booking.id} className="border-b border-white/5">
+                        <td className="py-3 px-4 text-white">
+                          {booking.client_name}
+                        </td>
+                        <td className="py-3 px-4 text-white font-medium">
+                          {booking.price.toFixed(3)} د.ك
+                        </td>
+                        <td className="py-3 px-4 text-white/80">
+                          {format(new Date(booking.date), 'dd/MM/yyyy', { locale: ar })}
+                        </td>
+                        <td className="py-3 px-4 text-white/80">
+                          {booking.booking_type === 'morning' ? 'صباحي' :
+                           booking.booking_type === 'evening' ? 'مسائي' : 'يوم كامل'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-white/60">
+                لا توجد حجوزات في هذه الفترة
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Expenses Table */}
